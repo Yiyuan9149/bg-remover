@@ -1,0 +1,13 @@
+{
+  "name": "bg-remover",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple Node.js website for background removal using remove.bg API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

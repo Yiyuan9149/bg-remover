@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>在线图片去背景 - 一键生成透明 PNG</title>
+    <meta
+      name="description"
+      content="在线图片去背景工具，上传即可自动去除背景，几秒内生成透明 PNG。适合商品图、人像、头像、封面图等常见场景。"
+    />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --bg-soft: #1e293b;
+        --surface: rgba(255, 255, 255, 0.92);
+        --surface-2: #ffffff;
+        --text: #0f172a;
+        --text-soft: #475569;
+        --line: #e2e8f0;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-soft: rgba(37, 99, 235, 0.08);
+        --success: #059669;
+        --danger: #dc2626;
+        --shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.22);
+        --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.12);
+        --radius-xl: 28px;
+        --radius-lg: 22px;
+        --radius-md: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          "PingFang SC",
+          "Hiragino Sans GB",
+          "Microsoft YaHei",
+          sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 26%),
+          radial-gradient(circle at top right, rgba(99, 102, 241, 0.14), transparent 24%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      .container {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .hero-wrap {
+        padding: 28px 0 48px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 22px;
+        color: #fff;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #60a5fa, #2563eb);
+        box-shadow: 0 12px 26px rgba(37, 99, 235, 0.28);
+        color: #fff;
+        font-size: 18px;
+      }
+
+      .topbar-note {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .hero-card {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 24px;
+        padding: 24px;
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .panel {
+        background: var(--surface);
+        border-radius: 24px;
+        padding: 30px;
+        min-width: 0;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 14px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--primary);
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(34px, 5vw, 54px);
+        line-height: 1.04;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-desc {
+        margin: 18px 0 0;
+        font-size: 17px;
+        line-height: 1.8;
+        color: var(--text-soft);
+        max-width: 44ch;
+      }
+
+      .hero-points {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .hero-cta {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+      }
+
+      .btn,
+      .btn-secondary,
+      .download-link {
+        appearance: none;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        min-height: 50px;
+        padding: 0 20px;
+        border-radius: 14px;
+        font-size: 15px;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          box-shadow 0.18s ease,
+          opacity 0.18s ease;
+      }
+
+      .btn {
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 14px 28px rgba(37, 99, 235, 0.24);
+      }
+
+      .btn:hover:not(:disabled) {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+
+      .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.75;
+      }
+
+      .btn-secondary {
+        background: #eef2ff;
+        color: var(--primary);
+      }
+
+      .btn-secondary:hover {
+        background: #e0e7ff;
+      }
+
+      .sub-note {
+        margin-top: 14px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--text-soft);
+      }
+
+      .upload-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .upload-box {
+        position: relative;
+        display: grid;
+        gap: 8px;
+        text-align: center;
+        padding: 28px 18px;
+        border-radius: 22px;
+        border: 1.5px dashed rgba(37, 99, 235, 0.34);
+        background:
+          linear-gradient(180deg, rgba(37, 99, 235, 0.06), rgba(37, 99, 235, 0.02)),
+          #fff;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          border-color 0.18s ease;
+        cursor: pointer;
+      }
+
+      .upload-box:hover,
+      .upload-box:focus-within {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+        border-color: rgba(37, 99, 235, 0.52);
+      }
+
+      .upload-box input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .upload-title {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .upload-text,
+      .upload-hint {
+        color: var(--text-soft);
+        line-height: 1.7;
+      }
+
+      .upload-hint {
+        font-size: 13px;
+      }
+
+      .file-meta {
+        display: none;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: #f8fafc;
+      }
+
+      .file-meta.show {
+        display: flex;
+      }
+
+      .file-name {
+        font-size: 14px;
+        font-weight: 700;
+        word-break: break-all;
+      }
+
+      .file-size {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--text-soft);
+      }
+
+      .status {
+        min-height: 24px;
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--text-soft);
+      }
+
+      .status.loading {
+        color: var(--primary);
+      }
+
+      .status.success {
+        color: var(--success);
+      }
+
+      .status.error {
+        color: var(--danger);
+      }
+
+      .progress {
+        display: none;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .progress.show {
+        display: flex;
+      }
+
+      .progress-bar {
+        position: relative;
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        overflow: hidden;
+      }
+
+      .progress-value {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 32%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        animation: progressMove 1.2s ease-in-out infinite;
+      }
+
+      @keyframes progressMove {
+        0% {
+          left: -32%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+
+      .preview-wrap {
+        display: grid;
+        place-items: center;
+        min-height: 360px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        overflow: hidden;
+        background:
+          linear-gradient(45deg, rgba(15, 23, 42, 0.06) 25%, transparent 25%),
+          linear-gradient(-45deg, rgba(15, 23, 42, 0.06) 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, rgba(15, 23, 42, 0.06) 75%),
+          linear-gradient(-45deg, transparent 75%, rgba(15, 23, 42, 0.06) 75%);
+        background-size: 24px 24px;
+        background-position:
+          0 0,
+          0 12px,
+          12px -12px,
+          -12px 0;
+      }
+
+      .preview-wrap img {
+        max-height: 460px;
+        object-fit: contain;
+        filter: drop-shadow(0 16px 26px rgba(15, 23, 42, 0.15));
+      }
+
+      .empty-preview {
+        text-align: center;
+        max-width: 28ch;
+        color: var(--text-soft);
+        line-height: 1.8;
+      }
+
+      .result-actions {
+        display: none;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .result-actions.show {
+        display: flex;
+      }
+
+      .download-link {
+        background: #111827;
+        color: #fff;
+      }
+
+      .download-link:hover {
+        transform: translateY(-1px);
+        background: #0b1220;
+      }
+
+      .section {
+        padding: 24px 0 80px;
+      }
+
+      .section-card {
+        background: #fff;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        padding: 34px;
+      }
+
+      .section-head {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 40px);
+        letter-spacing: -0.03em;
+      }
+
+      .section-head p {
+        margin: 12px auto 0;
+        max-width: 50ch;
+        color: var(--text-soft);
+        line-height: 1.8;
+      }
+
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .info-card {
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: #fff;
+      }
+
+      .info-card .icon {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 20px;
+        margin-bottom: 14px;
+      }
+
+      .info-card h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .info-card p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 1.8;
+        font-size: 14px;
+      }
+
+      .compare-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .compare-item {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .compare-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .compare-head strong {
+        font-size: 15px;
+      }
+
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .badge.before {
+        background: #f1f5f9;
+        color: #475569;
+      }
+
+      .badge.after {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .compare-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .mock-image {
+        min-height: 220px;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        font-size: 14px;
+        color: #64748b;
+      }
+
+      .mock-image.before {
+        background: linear-gradient(180deg, #f8fafc, #eef2f7);
+      }
+
+      .mock-image.after {
+        background:
+          linear-gradient(45deg, rgba(15, 23, 42, 0.06) 25%, transparent 25%),
+          linear-gradient(-45deg, rgba(15, 23, 42, 0.06) 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, rgba(15, 23, 42, 0.06) 75%),
+          linear-gradient(-45deg, transparent 75%, rgba(15, 23, 42, 0.06) 75%);
+        background-size: 24px 24px;
+        background-position:
+          0 0,
+          0 12px,
+          12px -12px,
+          -12px 0;
+      }
+
+      .faq {
+        display: grid;
+        gap: 14px;
+      }
+
+      .faq-item {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 20px;
+        background: #fff;
+      }
+
+      .faq-item strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+
+      .faq-item p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 1.8;
+      }
+
+      .footer-cta {
+        text-align: center;
+      }
+
+      .footer-cta .btn {
+        margin-top: 8px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 980px) {
+        .hero-card,
+        .grid-4,
+        .grid-3,
+        .compare-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .compare-body {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .container {
+          width: min(100% - 20px, 1180px);
+        }
+
+        .hero-wrap {
+          padding: 16px 0 36px;
+        }
+
+        .hero-card {
+          padding: 14px;
+          border-radius: 22px;
+        }
+
+        .panel,
+        .section-card {
+          padding: 22px;
+          border-radius: 20px;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .hero-cta,
+        .result-actions {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .btn,
+        .btn-secondary,
+        .download-link {
+          width: 100%;
+        }
+
+        .file-meta {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .compare-body {
+          grid-template-columns: 1fr;
+        }
+
+        .mock-image {
+          min-height: 180px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero-wrap">
+      <div class="container">
+        <div class="topbar">
+          <div class="brand">
+            <div class="brand-mark">✦</div>
+            <span>BG Remover</span>
+          </div>
+          <div class="topbar-note">在线去背景工具 · 适合商品图 / 人像 / 头像 / 封面图</div>
+        </div>
+
+        <section class="hero-card">
+          <div class="panel">
+            <p class="eyebrow">Online Background Remover</p>
+            <h1>一键去除图片背景，快速生成透明 PNG</h1>
+            <p class="hero-desc">
+              上传图片后自动去背景，适合商品图、人像、头像、封面图等常见场景。不用 PS，也不用复杂操作，几秒内就能预览和下载。
+            </p>
+
+            <div class="hero-points">
+              <span class="chip">无需安装软件</span>
+              <span class="chip">支持常见图片格式</span>
+              <span class="chip">处理完成即可下载</span>
+            </div>
+
+            <div class="hero-cta">
+              <a class="btn" href="#tool">立即上传图片</a>
+              <a class="btn-secondary" href="#examples">先看效果示例</a>
+            </div>
+
+            <p class="sub-note">
+              支持 JPG / PNG / WEBP，建议 12MB 以内。适合日常轻量抠图需求。
+            </p>
+          </div>
+
+          <div id="tool" class="panel upload-panel">
+            <form id="upload-form" novalidate>
+              <label class="upload-box" for="image-input">
+                <input
+                  id="image-input"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  required
+                  aria-describedby="upload-hint"
+                />
+                <span class="upload-title">点击选择图片，或拖到这里</span>
+                <span class="upload-text">上传后自动去背景，生成透明 PNG</span>
+                <small id="upload-hint" class="upload-hint">
+                  支持常见图片格式，建议文件小于 12MB
+                </small>
+              </label>
+
+              <div id="file-meta" class="file-meta" aria-live="polite">
+                <div>
+                  <div id="file-name" class="file-name"></div>
+                  <div id="file-size" class="file-size"></div>
+                </div>
+                <button id="clear-btn" type="button" class="btn-secondary">重新选择</button>
+              </div>
+
+              <div style="margin-top:16px;">
+                <button id="submit-btn" class="btn" type="submit">上传并生成 PNG</button>
+              </div>
+            </form>
+
+            <div id="progress" class="progress" aria-hidden="true">
+              <div class="progress-bar">
+                <div class="progress-value"></div>
+              </div>
+            </div>
+
+            <p id="status" class="status" aria-live="polite"></p>
+
+            <div class="preview-wrap">
+              <img id="preview-image" class="hidden" alt="去背景结果预览" />
+              <div id="empty-preview" class="empty-preview">
+                处理完成后，结果会显示在这里。透明背景区域会用棋盘格展示。
+              </div>
+            </div>
+
+            <div id="result-actions" class="result-actions">
+              <a id="download-link" class="download-link" download>下载结果 PNG</a>
+              <button id="copy-btn" type="button" class="btn-secondary">复制图片链接</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container">
+          <div class="section-card">
+            <div class="section-head">
+              <h2>这些场景都适合用</h2>
+              <p>
+                很多人不是不会抠图，而是不想为了一张图专门打开复杂软件。这个工具更适合“马上要用图”的场景。
+              </p>
+            </div>
+
+            <div class="grid-4">
+              <article class="info-card">
+                <div class="icon">🛍</div>
+                <h3>电商商品图</h3>
+                <p>快速去掉杂乱背景，让商品主体更干净，更适合上架展示和详情页使用。</p>
+              </article>
+
+              <article class="info-card">
+                <div class="icon">🧑</div>
+                <h3>人像头像</h3>
+                <p>做头像、人物素材、活动海报时，不用手动一点点抠，速度更快。</p>
+              </article>
+
+              <article class="info-card">
+                <div class="icon">📱</div>
+                <h3>自媒体封面</h3>
+                <p>做小红书封面、短视频配图、社媒素材时，直接处理后再排版会更省时间。</p>
+              </article>
+
+              <article class="info-card">
+                <div class="icon">💼</div>
+                <h3>办公设计</h3>
+                <p>做汇报、活动宣传图、简单海报时，临时需要透明底图会很方便。</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="examples" class="section">
+        <div class="container">
+          <div class="section-card">
+            <div class="section-head">
+              <h2>效果示意</h2>
+              <p>真正打动用户的不是“可以去背景”，而是“去完以后确实能马上拿去用”。</p>
+            </div>
+
+            <div class="compare-grid">
+              <article class="compare-item">
+                <div class="compare-head">
+                  <strong>人物图</strong>
+                  <span class="badge after">适合头像 / 海报</span>
+                </div>
+                <div class="compare-body">
+                  <div class="mock-image before">原图示意</div>
+                  <div class="mock-image after">去背景后示意</div>
+                </div>
+              </article>
+
+              <article class="compare-item">
+                <div class="compare-head">
+                  <strong>商品图</strong>
+                  <span class="badge after">适合电商展示</span>
+                </div>
+                <div class="compare-body">
+                  <div class="mock-image before">原图示意</div>
+                  <div class="mock-image after">去背景后示意</div>
+                </div>
+              </article>
+
+              <article class="compare-item">
+                <div class="compare-head">
+                  <strong>宠物 / 物品图</strong>
+                  <span class="badge after">适合内容创作</span>
+                </div>
+                <div class="compare-body">
+                  <div class="mock-image before">原图示意</div>
+                  <div class="mock-image after">去背景后示意</div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-card">
+            <div class="section-head">
+              <h2>为什么很多人更愿意用这种工具</h2>
+              <p>用户真正关心的，不只是能不能用，而是省不省事、快不快、值不值得马上试。</p>
+            </div>
+
+            <div class="grid-3">
+              <article class="info-card">
+                <div class="icon">⚡</div>
+                <h3>打开网页就能处理</h3>
+                <p>不需要专门安装软件，也不需要学习复杂设计工具，进入页面就可以开始上传。</p>
+              </article>
+
+              <article class="info-card">
+                <div class="icon">🎯</div>
+                <h3>更适合临时用图</h3>
+                <p>很多人只是想快速拿到透明 PNG，而不是为了抠一张图专门折腾半天。</p>
+              </article>
+
+              <article class="info-card">
+                <div class="icon">📦</div>
+                <h3>结果拿来就能继续用</h3>
+                <p>处理完成后直接下载，适合继续做封面、商品图、PPT、海报和社媒素材。</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-card">
+            <div class="section-head">
+              <h2>常见问题</h2>
+              <p>把用户最容易犹豫的地方提前说清楚，通常会更容易提高转化。</p>
+            </div>
+
+            <div class="faq">
+              <article class="faq-item">
+                <strong>支持哪些图片格式？</strong>
+                <p>支持 JPG、PNG、WEBP 等常见图片格式。只要是正常图片文件，一般都可以上传处理。</p>
+              </article>
+
+              <article class="faq-item">
+                <strong>去背景后下载的是什么格式？</strong>
+                <p>处理完成后可以下载透明背景 PNG，这样后续做设计、做封面、做商品图会更方便。</p>
+              </article>
+
+              <article class="faq-item">
+                <strong>手机可以用吗？</strong>
+                <p>可以。这个页面已经适配手机和电脑，移动端也能直接上传、预览和下载。</p>
+              </article>
+
+              <article class="faq-item">
+                <strong>处理速度大概多久？</strong>
+                <p>通常几秒内就可以完成，具体速度会受到图片大小、网络和接口响应情况影响。</p>
+              </article>
+
+              <article class="faq-item">
+                <strong>适合什么样的图片？</strong>
+                <p>主体越清晰、背景越容易区分，效果通常越好。人物、商品、宠物、静物通常都比较适合。</p>
+              </article>
+            </div>
+
+            <div class="footer-cta" style="margin-top: 30px;">
+              <h2 style="margin:0 0 10px; font-size: 30px;">现在就试一张图看看效果</h2>
+              <p style="margin:0; color: var(--text-soft); line-height:1.8;">
+                先上传，先看结果，再决定要不要继续用，体验门槛尽量降到最低。
+              </p>
+              <a class="btn" href="#tool">立即上传图片</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("upload-form");
+      const input = document.getElementById("image-input");
+      const statusEl = document.getElementById("status");
+      const previewImage = document.getElementById("preview-image");
+      const emptyPreview = document.getElementById("empty-preview");
+      const downloadLink = document.getElementById("download-link");
+      const submitBtn = document.getElementById("submit-btn");
+      const progress = document.getElementById("progress");
+      const resultActions = document.getElementById("result-actions");
+      const fileMeta = document.getElementById("file-meta");
+      const fileNameEl = document.getElementById("file-name");
+      const fileSizeEl = document.getElementById("file-size");
+      const clearBtn = document.getElementById("clear-btn");
+      const copyBtn = document.getElementById("copy-btn");
+
+      input.addEventListener("change", () => {
+        const file = input.files?.[0];
+        if (!file) {
+          resetFileMeta();
+          return;
+        }
+
+        fileMeta.classList.add("show");
+        fileNameEl.textContent = file.name;
+        fileSizeEl.textContent = formatBytes(file.size);
+        setStatus("已选择图片，可以开始处理。", "success");
+      });
+
+      clearBtn.addEventListener("click", () => {
+        input.value = "";
+        resetFileMeta();
+        resetResult();
+        setStatus("已清空选择，请重新上传图片。");
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        const href = downloadLink.href;
+        if (!href) return;
+
+        try {
+          await navigator.clipboard.writeText(href);
+          setStatus("图片链接已复制。", "success");
+        } catch {
+          setStatus("复制失败，请手动复制。", "error");
+        }
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const file = input.files?.[0];
+        if (!file) {
+          setStatus("请先选择一张图片。", "error");
+          return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+          setStatus("请上传图片文件。", "error");
+          return;
+        }
+
+        const maxSize = 12 * 1024 * 1024;
+        if (file.size > maxSize) {
+          setStatus("图片过大，建议上传 12MB 以内的文件。", "error");
+          return;
+        }
+
+        setPending(true, "正在上传并处理图片，请稍候...");
+        resetResult();
+
+        try {
+          const imageBase64 = await fileToBase64(file);
+
+          const response = await fetch("/api/remove-background", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              filename: file.name,
+              size: file.size,
+              imageBase64,
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            throw new Error(payload.error || "处理失败，请稍后重试。");
+          }
+
+          if (!payload.imageBase64 || !payload.mimeType) {
+            throw new Error("返回结果不完整，请检查服务端接口。");
+          }
+
+          const imageUrl = `data:${payload.mimeType};base64,${payload.imageBase64}`;
+
+          previewImage.src = imageUrl;
+          previewImage.classList.remove("hidden");
+          emptyPreview.classList.add("hidden");
+
+          downloadLink.href = imageUrl;
+          downloadLink.download = payload.filename || "removed-background.png";
+          resultActions.classList.add("show");
+
+          setStatus("处理完成，可以预览或下载。", "success");
+        } catch (error) {
+          setStatus(error.message || "处理失败，请稍后重试。", "error");
+        } finally {
+          setPending(false);
+        }
+      });
+
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+
+          reader.onload = () => {
+            const result = String(reader.result || "");
+            const base64 = result.split(",")[1];
+            if (!base64) {
+              reject(new Error("图片读取失败。"));
+              return;
+            }
+            resolve(base64);
+          };
+
+          reader.onerror = () => reject(new Error("图片读取失败。"));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function setPending(isPending, message) {
+        submitBtn.disabled = isPending;
+        submitBtn.textContent = isPending ? "处理中..." : "上传并生成 PNG";
+        progress.classList.toggle("show", isPending);
+        progress.setAttribute("aria-hidden", String(!isPending));
+
+        if (isPending) {
+          setStatus(message || "处理中...", "loading");
+        }
+      }
+
+      function setStatus(message, type = "") {
+        statusEl.textContent = message || "";
+        statusEl.className = "status";
+        if (type) {
+          statusEl.classList.add(type);
+        }
+      }
+
+      function resetResult() {
+        previewImage.src = "";
+        previewImage.classList.add("hidden");
+        emptyPreview.classList.remove("hidden");
+        resultActions.classList.remove("show");
+        downloadLink.removeAttribute("href");
+        downloadLink.removeAttribute("download");
+      }
+
+      function resetFileMeta() {
+        fileMeta.classList.remove("show");
+        fileNameEl.textContent = "";
+        fileSizeEl.textContent = "";
+      }
+
+      function formatBytes(bytes) {
+        if (bytes === 0) return "0 B";
+        const units = ["B", "KB", "MB", "GB"];
+        const i = Math.min(
+          Math.floor(Math.log(bytes) / Math.log(1024)),
+          units.length - 1
+        );
+        const value = bytes / Math.pow(1024, i);
+        return `${value.toFixed(value >= 100 || i === 0 ? 0 : 1)} ${units[i]}`;
+      }
+    </script>
+  </body>
+</html>
